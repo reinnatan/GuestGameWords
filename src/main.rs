@@ -1,10 +1,9 @@
 
 extern crate termion;
 use std::io::{stdout, Write};
-
 use rand::Rng;
-use serde::{Deserialize, Serialize};
 use console::Term;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Word{
@@ -49,7 +48,6 @@ fn get_random_word(list_word:&Vec<Word>){
     empty_string.push_str("_")
   }
 
-  
   print!("Word Detail : {}\n", word_selected.detail);
   print!("Opportunity Guest : {}\n", tolerancy_answer); 
   print!("Your Guest : ");
@@ -57,7 +55,9 @@ fn get_random_word(list_word:&Vec<Word>){
   match result {
       Ok(_value)=> { 
         let character = term.read_char().unwrap();
-        play_game_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer); },
+        println!("\nYou're opportunity guest word : {}\n",tolerancy_answer-count_wrong_guest);
+        play_game_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer); 
+      },
       Err(err)=>{
         print!("Error occured {}", err)
       }
@@ -69,7 +69,8 @@ fn get_random_word(list_word:&Vec<Word>){
 
 fn play_game_guest_word(mut key_find:char, mut empty_list_word:String, selected_word:&Word, mut count_wrong_guest:i32, tolerancy_answer:i32){
   
-  while empty_list_word.contains("_") && count_wrong_guest<tolerancy_answer{
+  while empty_list_word.contains("_") && (tolerancy_answer-count_wrong_guest)>0{
+   
     if selected_word.description.contains(key_find){
       for u in 0..selected_word.description.len(){
         if selected_word.description.chars().nth(u).unwrap() == key_find{
@@ -80,8 +81,8 @@ fn play_game_guest_word(mut key_find:char, mut empty_list_word:String, selected_
       count_wrong_guest +=1;
     }
 
-    
     print!("\nCurrent word guest : {}\n",empty_list_word);
+    println!("\nYou're opportunity guest word : {}\n",tolerancy_answer-count_wrong_guest);
     print!("Your Guest : ");
     let result = stdout().flush();
     match result {
@@ -95,7 +96,7 @@ fn play_game_guest_word(mut key_find:char, mut empty_list_word:String, selected_
     }
   }
 
-  if count_wrong_guest >= tolerancy_answer{
+  if tolerancy_answer-count_wrong_guest==0{
     print!("\n\n==========================\n");
     print!("Sorry you are Loose...\n");
     print!("Guested Word : {}",selected_word.description);
