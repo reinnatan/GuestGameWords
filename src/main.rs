@@ -56,7 +56,7 @@ fn get_random_word(list_word:&Vec<Word>){
       Ok(_value)=> { 
         let character = term.read_char().unwrap();
         println!("\nYou're opportunity guest word : {}\n",tolerancy_answer-count_wrong_guest);
-        play_game_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer); 
+        play_game_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer-count_wrong_guest); 
       },
       Err(err)=>{
         print!("Error occured {}", err)
