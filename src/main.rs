@@ -1,5 +1,7 @@
 
 extern crate termion;
+use std::io::{stdout, Write};
+
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use console::Term;
@@ -14,9 +16,11 @@ struct Word{
 async fn main()  { 
 let url = "https://raw.githubusercontent.com/reinnatan/RubyWebCrawler/master/output.json";
 let response = reqwest::get(url).await.unwrap();
-  print!("====================================\n");
-  print!("=====     GUEST GAME WORD        ===\n");
-  print!("====================================\n");
+
+  print!("{}[2J", 27 as char);
+  print!("=========================================\n");
+  print!("=======     GUEST GAME WORD       =======\n");
+  print!("=========================================\n");
 
   match response.status() {      
       reqwest::StatusCode::OK =>{
@@ -45,21 +49,27 @@ fn get_random_word(list_word:&Vec<Word>){
     empty_string.push_str("_")
   }
 
+  
   print!("Word Detail : {}\n", word_selected.detail);
-  print!("Total Guest : {}\n", tolerancy_answer); 
+  print!("Opportunity Guest : {}\n", tolerancy_answer); 
   print!("Your Guest : ");
-
-  let character = term.read_char().unwrap();
-  let is_win = is_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer);
-  if is_win{
-    print!("Horayyy... you win...\n");
-  }else {
-    print!("You are Loose...\n");
+  let result = stdout().flush();
+  match result {
+      Ok(_value)=> { 
+        let character = term.read_char().unwrap();
+        play_game_guest_word(character, empty_string, word_selected, count_wrong_guest, tolerancy_answer); },
+      Err(err)=>{
+        print!("Error occured {}", err)
+      }
   }
+  
+  
 }
   
 
-fn is_guest_word(key_find:char, mut empty_list_word:String, selected_word:&Word, mut count_wrong_guest:i32, tolerancy_answer:i32)->bool{
+fn play_game_guest_word(mut key_find:char, mut empty_list_word:String, selected_word:&Word, mut count_wrong_guest:i32, tolerancy_answer:i32){
+  
+  while empty_list_word.contains("_") && count_wrong_guest<tolerancy_answer{
     if selected_word.description.contains(key_find){
       for u in 0..selected_word.description.len(){
         if selected_word.description.chars().nth(u).unwrap() == key_find{
@@ -70,18 +80,32 @@ fn is_guest_word(key_find:char, mut empty_list_word:String, selected_word:&Word,
       count_wrong_guest +=1;
     }
 
-    print!("Current word guest : {}",empty_list_word);
-  
-    if empty_list_word.contains("_") && count_wrong_guest<tolerancy_answer{
-      print!("Your Guest : ");
-      let term = Term::stdout();
-      let character = term.read_char().unwrap();
-
-      return is_guest_word(character, empty_list_word, selected_word, count_wrong_guest, tolerancy_answer)
-    }else if count_wrong_guest >= tolerancy_answer{
-      return false;
-    }else{
-      return true;
+    
+    print!("\nCurrent word guest : {}\n",empty_list_word);
+    print!("Your Guest : ");
+    let result = stdout().flush();
+    match result {
+      Ok(_value)=> { 
+        let term = Term::stdout();
+        key_find = term.read_char().unwrap();
+      },
+      Err(err)=>{
+        print!("Error occured {}", err)
+      }
     }
   }
+
+  if count_wrong_guest >= tolerancy_answer{
+    print!("\n\n==========================\n");
+    print!("Sorry you are Loose...\n");
+    print!("Guested Word : {}",selected_word.description);
+    print!("\n==========================\n");
+  }else {
+    print!("\n\n==========================\n");
+    print!("Horayyy... you win...\n");
+    print!("Guested Word : {}",empty_list_word);
+    print!("\n==========================\n");
+  }
+  
+}
 
