@@ -82,7 +82,12 @@ fn play_game_guest_word(mut key_find:char, mut empty_list_word:String, selected_
     }
 
     print!("\nCurrent word guest : {}\n",empty_list_word);
-    println!("\nYou're opportunity guest word : {}\n",tolerancy_answer-count_wrong_guest);
+    if (tolerancy_answer-count_wrong_guest)==0{
+      println!("\nBonus guest word");
+    }else{
+      println!("\nYou're opportunity guest word : {}\n",tolerancy_answer-count_wrong_guest);
+    }
+    
     print!("Your Guest : ");
     let result = stdout().flush();
     match result {
